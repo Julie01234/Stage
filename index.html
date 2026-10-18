@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mes bilans">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FBF6EC">
+<link rel="apple-touch-icon" href="apple-touch-icon.png.PNG">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bilans APA</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FBF6EC;--card:#fff;--beige:#EFE4D2;--rose:#F6E3E1;--acc:#E9C9C6;--ink:#4A3B36;--mut:#8a7a72;--on:#d9a29d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2220;--card:#362c29;--beige:#45382f;--rose:#4a3533;--acc:#7a5652;--ink:#f1e6dc;--mut:#b9a79c;--on:#b9807b}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"EB Garamond",Garamond,Georgia,serif;font-size:18px;line-height:1.4}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+h1{text-align:center;font-weight:500;font-size:28px;margin:8px 0 2px}
+.sub{text-align:center;color:var(--mut);margin:0 0 16px}
+h2{background:var(--rose);border-bottom:2px solid var(--acc);padding:6px 10px;font-size:20px;font-weight:600;margin:20px 0 10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--acc);border:0;border-radius:8px;padding:10px 16px;font-weight:600}
+.ghost{background:none;border:0;color:var(--mut);padding:6px 0}
+input,textarea{font:inherit;color:inherit;background:var(--card);border:1px solid var(--beige);border-radius:8px;padding:10px;width:100%}
+.row{display:flex;gap:8px}
+.person{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--beige);border-radius:10px;padding:14px;margin-bottom:8px}
+.person small{color:var(--mut)}
+.tabs{display:flex;border-bottom:2px solid var(--beige);margin:12px 0}
+.tabs button{flex:1;background:none;border:0;padding:10px 4px;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--on);font-weight:600}
+.q{background:var(--card);border:1px solid var(--beige);border-radius:10px;padding:12px;margin-bottom:10px}
+.q b{display:block;margin-bottom:8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{background:var(--bg);border:1px solid var(--beige);border-radius:20px;padding:6px 12px}
+.chip.on{background:var(--acc);border-color:var(--on);font-weight:600}
+.seg{display:flex;background:var(--beige);border-radius:8px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;padding:8px;border-radius:6px}
+.seg button.on{background:var(--card);font-weight:600}
+.lvl{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.lvl button{background:var(--bg);border:1px solid var(--beige);border-radius:8px;padding:10px 0;font-weight:600}
+.lvl button.on{background:var(--acc);border-color:var(--on)}
+.hint{color:var(--mut);font-size:16px;margin:0 0 8px}
+.zone{fill:transparent;stroke:var(--mut);stroke-width:1.2;stroke-dasharray:3 2;cursor:pointer}
+.zone.on{fill:var(--on);fill-opacity:.55;stroke:var(--ink);stroke-dasharray:none}
+.paper{background:#fff;color:#4A3B36;border:1px solid var(--beige);padding:18px;border-radius:4px;margin-top:10px}
+.paper h3{text-align:center;font-weight:500;font-size:24px;margin:0}
+.paper h4{background:#F6E3E1;border-bottom:2px solid #E9C9C6;margin:16px 0 8px;padding:4px 8px;font-size:17px}
+.paper table{width:100%;border-collapse:collapse;font-size:16px}
+.paper th{background:#EFE4D2;text-align:left;padding:5px 8px}
+.paper td{border-bottom:1px solid #EFE4D2;padding:5px 8px}
+.paper td:first-child{background:#FBF6EC}
+.leg{display:flex;gap:14px;justify-content:center;font-size:15px}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+let Q=[
+ ["Ce qui l’amène",["Reprise d’activité","Douleurs","Perte d’équilibre","Prévention","Surpoids"]],
+ ["Douleurs aujourd’hui",["Aucune","Dos","Genoux","Chevilles","Épaules"]],
+ ["Activité physique actuelle",["Aucune","Marche occasionnelle","1 à 2 séances/sem.","3 séances ou +"]],
+ ["Autonomie au quotidien",["Totale","Aide ponctuelle","Aide régulière"]],
+ ["Objectif de la personne",["Mieux bouger","Gagner en force","Retrouver confiance","Perdre du poids"]]
+];
+let T=[
+ ["Équilibre","Appui unipodal",["Impossible","< 5 s","5 à 10 s","10 à 30 s","> 30 s"]],
+ ["Souplesse","Sit and reach",["Très limitée","Limitée","Moyenne","Bonne","Très bonne"]],
+ ["Force","Chaise 30 s",["Très faible","Faible","Moyenne","Bonne","Très bonne"]],
+ ["Endurance","Marche 6 min",["Très faible","Faible","Moyenne","Bonne","Très bonne"]],
+ ["Mobilité","Timed Up and Go",["Très lent","Lent","Moyen","Rapide","Très rapide"]]
+];
+const Z=[["Tête",60,22],["Épaule G",36,56],["Épaule D",84,56],["Dos / tronc",60,92],["Hanche G",48,128],["Hanche D",72,128],["Genou G",48,172],["Genou D",72,172],["Cheville G",46,226],["Cheville D",74,226]];
+let S={people:[{id:1,name:"Claire Martin",q:{0:"Perte d’équilibre",1:"Chevilles",2:"Marche occasionnelle"},qn:{},t:{debut:{0:{l:2},1:{l:2,n:"Raideur cheville droite"},2:{l:3},3:{l:3},4:{l:3}},fin:{}},z:{debut:["Cheville D"],fin:[]}}],cur:null,tab:"q",ph:"debut",test:0};
+try{const s=localStorage.getItem("apa");if(s)S=JSON.parse(s)}catch(e){}
+const save=()=>{try{localStorage.setItem("apa",JSON.stringify(S))}catch(e){}};
+const P=()=>S.people.find(p=>p.id===S.cur);
+if(!S.models)S.models=[{id:1,name:"Général",Q:JSON.parse(JSON.stringify(Q)),T:JSON.parse(JSON.stringify(T))}];
+const M=id=>S.models.find(m=>m.id==id)||S.models[0];
+const LV=["Très faible","Faible","Moyenne","Bonne","Très bonne"];
+const TT=[["Kinésiophobie (TSK)","Questionnaire de peur du mouvement",["Très élevée","Élevée","Modérée","Faible","Très faible"]],["Douleur (EVA)","Échelle visuelle analogique",["Très forte","Forte","Modérée","Légère","Aucune"]],["Endurance","Marche de 6 minutes",LV],["Force","Assis-debout 30 s",LV],["Mobilité","Timed Up and Go",LV]];
+const mk=(id,name,Qs)=>{if(!S.models.some(m=>m.id==id))S.models.push({id,name,Q:Qs,T:JSON.parse(JSON.stringify(TT))})};
+mk(2,"Oncologie",[["Type de cancer",["Sein","Poumon","Colorectal","Prostate","Gynécologique"]],["Où en est la personne ?",["En traitement","Après chirurgie","En rémission"]],["Traitement en cours",["Chimiothérapie","Radiothérapie","Immunothérapie","Hormonothérapie","Thérapie ciblée","Aucun"]],["Douleur aujourd’hui",["Aucune","Légère","Modérée","Forte"]],["Peur de bouger ou de se faire mal",["Aucune","Un peu","Beaucoup"]],["Fatigue",["Faible","Modérée","Forte"]],["Activité physique avant la maladie",["Aucune","Occasionnelle","Régulière"]],["Objectif de la personne",[],"t"]]);
+mk(3,"Endocrinologie",[["Ce qui l’amène",[],"t"],["Douleurs aujourd’hui",["Aucune","Dos","Genoux","Hanches","Chevilles"]],["Activité physique actuelle",["Aucune","Marche occasionnelle","1 à 2 séances/sem.","3 séances ou +"]],["Peur de bouger ou de se faire mal",["Aucune","Un peu","Beaucoup"]],["Essoufflement à l’effort",["Aucun","Léger","Important"]],["Freins à l’activité",[],"t"]]);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const app=document.getElementById("app");
+const RF=(p,k,v)=>(p.rf&&p.rf[k])||v;
+
+function home(){
+ app.innerHTML=`<h1>Mes bilans</h1><p class="sub">Un dossier par personne</p>
+ <input id="nm" placeholder="Prénom Nom"><div class="row" style="margin-top:8px"><select id="md" style="flex:1;font:inherit;color:inherit;background:var(--card);border:1px solid var(--beige);border-radius:8px;padding:10px">${S.models.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select><button class="btn" id="add">Créer</button></div>
+ <h2>Dossiers</h2>`+(S.people.length?S.people.map(p=>`<button class="person" data-id="${p.id}"><b>${esc(p.name)}</b><br><small>${Object.keys(p.t.debut||{}).length} test(s) au début · ${Object.keys(p.t.fin||{}).length} en fin de cycle</small></button>`).join(""):`<p class="hint">Aucun dossier. Crée le premier ci-dessus.</p>`)+`<h2>Réglages</h2><button class="btn" id="set">Modèles, questions et tests</button>`;
+ document.getElementById("set").onclick=settings;
+ document.getElementById("add").onclick=()=>{const v=document.getElementById("nm").value.trim();if(!v)return;S.people.push({id:Date.now(),name:v,m:+document.getElementById("md").value,q:{},qn:{},t:{debut:{},fin:{}},z:{debut:[],fin:[]}});save();home()};
+ app.querySelectorAll(".person").forEach(b=>b.onclick=()=>{S.cur=+b.dataset.id;S.tab="q";S.qi=0;draw()});
+}
+
+function draw(){
+ const p=P();if(!p)return home();
+ const mm=M(p.m);Q=mm.Q;T=mm.T;if(S.test>T.length)S.test=0;
+ const tabs=[["q","Entretien"],["t","Tests"],["b","Bilan"]];
+ app.innerHTML=`<button class="ghost" id="back">‹ Tous les dossiers</button><h1>${esc(p.name)}</h1>
+ <div class="tabs">${tabs.map(t=>`<button data-t="${t[0]}" class="${S.tab==t[0]?"on":""}">${t[1]}</button>`).join("")}</div><div id="body"></div>`;
+ document.getElementById("back").onclick=()=>{S.cur=null;home()};
+ app.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;if(S.tab=="t")S.test=0;draw()});
+ const bd=document.getElementById("body");
+ if(S.tab=="q")bd.innerHTML=entretien(p);else if(S.tab=="t")bd.innerHTML=tests(p);else bd.innerHTML=bilan(p);
+ wire(p);
+}
+
+function entretien(p){
+ const i=S.qi||0;
+ if(i>=Q.length)return `<div class="q"><b style="font-size:22px">Entretien terminé</b><p class="hint">Les réponses sont enregistrées dans le dossier.</p><div class="row"><button class="btn" data-go="t">Passer aux tests</button><button class="ghost" data-nav="-1">‹ Revoir</button></div></div>`;
+ const q=Q[i],txt=q[2]==="t"||S.oth===i;
+ const bar=`<p class="hint">Question ${i+1} sur ${Q.length}</p><div style="height:4px;background:var(--beige);border-radius:2px;margin-bottom:14px"><div style="height:4px;width:${(i+1)/Q.length*100}%;background:var(--on);border-radius:2px"></div></div>`;
+ const nav=`<div class="row">${i>0?`<button class="ghost" data-nav="-1">‹ Précédent</button>`:""}<span style="flex:1"></span><button class="ghost" data-nav="1">Passer ›</button></div>`;
+ if(txt)return bar+`<div class="q"><b style="font-size:22px">${q[0]}</b><textarea id="free" rows="3" placeholder="Écris la réponse">${esc(p.q[i]&&!q[1].includes(p.q[i])?p.q[i]:"")}</textarea><button class="btn" id="okfree" style="margin-top:10px;width:100%">Valider ›</button></div>`+nav;
+ return bar+`<div class="q"><b style="font-size:22px">${q[0]}</b><input data-qn="${i}" placeholder="Petite note (facultatif)" value="${esc(p.qn[i]||"")}"><p class="hint" style="margin-top:12px">Tape une réponse pour passer à la suite</p><div style="display:flex;flex-direction:column;gap:8px">${q[1].map(o=>`<button class="chip ${p.q[i]==o?"on":""}" style="padding:14px;text-align:left;border-radius:10px" data-q="${i}" data-v="${esc(o)}">${o}</button>`).join("")}<button class="chip" style="padding:14px;text-align:left;border-radius:10px;border-style:dashed" data-oth="${i}">Autre : j’écris moi-même</button></div></div>`+nav;
+}
+function tests(p){
+ const i=S.test,ph=S.ph;
+ const seg=`<div class="seg"><button data-ph="debut" class="${ph=="debut"?"on":""}">Début de cycle</button><button data-ph="fin" class="${ph=="fin"?"on":""}">Fin de cycle</button></div>`;
+ const bar=`<p class="hint">${i<T.length?"Test "+(i+1)+" sur "+T.length:"Dernière étape"}</p><div style="height:4px;background:var(--beige);border-radius:2px;margin-bottom:14px"><div style="height:4px;width:${Math.min(i+1,T.length)/T.length*100}%;background:var(--on);border-radius:2px"></div></div>`;
+ const nav=`<div class="row">${i>0?`<button class="ghost" data-tv="-1">‹ Précédent</button>`:""}<span style="flex:1"></span>${i<T.length?`<button class="ghost" data-tv="1">Passer ›</button>`:""}</div>`;
+ if(i>=T.length){const zs=p.z[ph]||[];return seg+bar+`<div class="q"><b style="font-size:22px">Zones à surveiller</b><p class="hint">Tape sur le schéma pour entourer une zone (facultatif).</p>
+ <svg viewBox="0 0 120 250" style="width:100%;max-width:200px;display:block;margin:0 auto" aria-label="Schéma du corps"><g fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round"><circle cx="60" cy="22" r="14"/><path d="M60 36V50M36 56H84M36 56L28 100M84 56L92 100M40 56L46 130M80 56L74 130M46 130H74M48 130L48 238M72 130L72 238"/></g>${Z.map(z=>`<circle class="zone ${zs.includes(z[0])?"on":""}" data-z="${z[0]}" cx="${z[1]}" cy="${z[2]}" r="${z[0]=="Dos / tronc"?16:11}"><title>${z[0]}</title></circle>`).join("")}</svg>
+ <p class="hint" style="text-align:center;margin-top:8px">${zs.length?zs.join(", "):"Aucune zone sélectionnée"}</p><button class="btn" data-go="b" style="width:100%">Voir le bilan</button></div>`+nav}
+ const t=T[i],cur=(p.t[ph]||{})[i]||{};
+ return seg+bar+`<div class="q"><b style="font-size:22px">${t[0]}</b><p class="hint">${esc(t[1])}</p><input data-tn placeholder="Petite note (facultatif)" value="${esc(cur.n||"")}"><p class="hint" style="margin-top:12px">Tape le niveau pour passer au test suivant</p><div style="display:flex;flex-direction:column;gap:8px">${[1,2,3,4,5].map(n=>`<button class="chip ${cur.l==n?"on":""}" style="padding:14px;text-align:left;border-radius:10px" data-l="${n}"><b>${n}</b> — ${esc(t[2][n-1]||"")}</button>`).join("")}</div></div>`+nav;
+}
+function entretienOld(p){
+ const i=S.qi||0;
+ if(i>=Q.length)return `<div class="q"><b style="font-size:22px">Entretien terminé</b><p class="hint">Les réponses sont enregistrées dans le dossier.</p><div class="row"><button class="btn" data-go="t">Passer aux tests</button><button class="ghost" data-nav="-1">‹ Revoir</button></div></div>`;
+ const q=Q[i];
+ return `<p class="hint">Question ${i+1} sur ${Q.length}</p><div style="height:4px;background:var(--beige);border-radius:2px;margin-bottom:14px"><div style="height:4px;width:${(i+1)/Q.length*100}%;background:var(--on);border-radius:2px"></div></div>
+ <div class="q"><b style="font-size:22px">${q[0]}</b><input data-qn="${i}" placeholder="Petite note (facultatif)" value="${esc(p.qn[i]||"")}"><p class="hint" style="margin-top:12px">Tape une réponse pour passer à la suite</p><div style="display:flex;flex-direction:column;gap:8px">${q[1].map(o=>`<button class="chip ${p.q[i]==o?"on":""}" style="padding:14px;text-align:left;border-radius:10px" data-q="${i}" data-v="${esc(o)}">${o}</button>`).join("")}</div></div>
+ <div class="row">${i>0?`<button class="ghost" data-nav="-1">‹ Précédent</button>`:""}<span style="flex:1"></span><button class="ghost" data-nav="1">Passer ›</button></div>`;
+}
+
+function testsOld(p){
+ const t=T[S.test],cur=(p.t[S.ph]||{})[S.test]||{};
+ const zs=p.z[S.ph]||[];
+ return `<div class="seg"><button data-ph="debut" class="${S.ph=="debut"?"on":""}">Début de cycle</button><button data-ph="fin" class="${S.ph=="fin"?"on":""}">Fin de cycle</button></div>
+ <div class="chips">${T.map((x,i)=>`<button class="chip ${S.test==i?"on":""}" data-tt="${i}">${x[0]}${(p.t[S.ph]||{})[i]?" ✓":""}</button>`).join("")}</div>
+ <div class="q"><b>${t[0]} — ${t[1]}</b><p class="hint">Où situes-tu la personne ?</p>
+ <div class="lvl">${[1,2,3,4,5].map(n=>`<button data-l="${n}" class="${cur.l==n?"on":""}">${n}</button>`).join("")}</div>
+ <p class="hint">${cur.l?(t[2][cur.l-1]||""):"Choisis un niveau de 1 à 5"}</p>
+ <input data-tn placeholder="Petite note (facultatif)" value="${esc(cur.n||"")}"></div>
+ <div class="q"><b>Zones à surveiller</b><p class="hint">Tape sur le schéma pour entourer une zone.</p>
+ <svg viewBox="0 0 120 250" style="width:100%;max-width:200px;display:block;margin:0 auto" aria-label="Schéma du corps">
+ <g fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round"><circle cx="60" cy="22" r="14"/><path d="M60 36V50M36 56H84M36 56L28 100M84 56L92 100M40 56L46 130M80 56L74 130M46 130H74M48 130L48 238M72 130L72 238"/></g>
+ ${Z.map(z=>`<circle class="zone ${zs.includes(z[0])?"on":""}" data-z="${z[0]}" cx="${z[1]}" cy="${z[2]}" r="${z[0]=="Dos / tronc"?16:11}"><title>${z[0]}</title></circle>`).join("")}</svg>
+ <p class="hint" style="text-align:center;margin-top:8px">${zs.length?zs.join(", "):"Aucune zone sélectionnée"}</p></div>`;
+}
+
+function radar(p){
+ const cx=130,cy=120,R=85,n=T.length,pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+R*v/5*Math.cos(a),cy+R*v/5*Math.sin(a)]};
+ const poly=ph=>T.map((_,i)=>pt(i,((p.t[ph]||{})[i]||{}).l||0).map(x=>x.toFixed(1)).join(",")).join(" ");
+ let g="";for(let l=1;l<=5;l++)g+=`<polygon points="${T.map((_,i)=>pt(i,l).join(",")).join(" ")}" fill="none" stroke="#EFE4D2"/>`;
+ const ax=T.map((t,i)=>{const e=pt(i,5),lb=pt(i,6.1);return`<line x1="${cx}" y1="${cy}" x2="${e[0]}" y2="${e[1]}" stroke="#EFE4D2"/><text x="${lb[0]}" y="${lb[1]+4}" text-anchor="middle" font-size="12" fill="#4A3B36">${t[0]}</text>`}).join("");
+ return `<svg viewBox="0 0 260 240" style="width:100%">${g}${ax}<polygon points="${poly("debut")}" fill="#E9C9C6" fill-opacity=".5" stroke="#d9a29d" stroke-width="2"/><polygon points="${poly("fin")}" fill="#B9A58A" fill-opacity=".35" stroke="#7a6650" stroke-width="2"/></svg><div class="leg"><span><i style="background:#E9C9C6"></i>Début</span><span><i style="background:#B9A58A"></i>Fin</span></div>`;
+}
+
+function bilan(p){
+ const d=p.t.debut||{},f=p.t.fin||{};
+ return `<p class="hint">Aperçu de la fiche PDF générée automatiquement.</p><div class="paper"><h3>Fiche bilan</h3><p style="text-align:center;color:#8a7a72;margin:0">${esc(p.name)}</p>
+ <h4>1. Entretien</h4><table>${Q.map((q,i)=>`<tr><td>${q[0]}</td><td>${esc(RF(p,"a"+i,p.q[i]||"—"))}${p.qn[i]?`<br><small>${esc(RF(p,"n"+i,p.qn[i]))}</small>`:""}</td></tr>`).join("")}</table>
+ <h4>2. Tests</h4><table><tr><th>Test</th><th>Début</th><th>Fin</th><th>Évolution</th></tr>${T.map((t,i)=>{const a=(d[i]||{}).l,b=(f[i]||{}).l,e=a&&b?(b-a>0?"+"+(b-a):b-a):"—";return`<tr><td>${t[0]}</td><td>${a||"—"}/5</td><td>${b||"—"}/5</td><td>${e}</td></tr>`}).join("")}</table>
+ <h4>3. Toile d’araignée</h4>${radar(p)}
+ <h4>4. Zones à surveiller</h4><p style="margin:0">Début : ${(p.z.debut||[]).join(", ")||"aucune"}<br>Fin : ${(p.z.fin||[]).join(", ")||"aucune"}</p>
+ <h4>5. Notes</h4><p style="margin:0">${T.map((t,i)=>(d[i]||{}).n?`${t[0]} : ${esc(RF(p,"t"+i,d[i].n))}`:"").filter(Boolean).join("<br>")||"—"}</p></div>
+ <button class="btn" id="pdf" style="margin-top:12px;width:100%">Télécharger le PDF</button><p class="hint" id="pdfmsg" style="margin-top:8px"></p>`;
+}
+
+function wire(p){
+ app.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{p.q[b.dataset.q]=b.dataset.v;S.qi=(S.qi||0)+1;save();draw()});
+ app.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>{S.qi=Math.max(0,(S.qi||0)+ +b.dataset.nav);save();draw()});
+ app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.go;S.test=0;draw()});
+ const pb=document.getElementById("pdf");if(pb)pb.onclick=()=>pdf(p);
+ const rb=document.getElementById("rfm");if(rb)rb.onclick=()=>reformulate(p);
+ const rx=document.getElementById("rfx");if(rx)rx.onclick=()=>{p.rf=null;save();draw()};
+ app.querySelectorAll("[data-oth]").forEach(b=>b.onclick=()=>{S.oth=+b.dataset.oth;draw()});
+ const ok=document.getElementById("okfree");if(ok)ok.onclick=()=>{const v=document.getElementById("free").value.trim();if(v)p.q[S.qi||0]=v;S.oth=null;S.qi=(S.qi||0)+1;save();draw()};
+ app.querySelectorAll("[data-tv]").forEach(b=>b.onclick=()=>{S.test=Math.max(0,Math.min(T.length,S.test+ +b.dataset.tv));draw()});
+ app.querySelectorAll("[data-qn]").forEach(i=>i.oninput=()=>{p.qn[i.dataset.qn]=i.value;save()});
+ app.querySelectorAll("[data-ph]").forEach(b=>b.onclick=()=>{S.ph=b.dataset.ph;S.test=0;draw()});
+ app.querySelectorAll("[data-tt]").forEach(b=>b.onclick=()=>{S.test=+b.dataset.tt;draw()});
+ app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{p.t[S.ph]=p.t[S.ph]||{};const c=p.t[S.ph][S.test]=p.t[S.ph][S.test]||{};c.l=+b.dataset.l;S.test++;save();draw()});
+ app.querySelectorAll("[data-tn]").forEach(i=>i.oninput=()=>{p.t[S.ph]=p.t[S.ph]||{};const c=p.t[S.ph][S.test]=p.t[S.ph][S.test]||{};c.n=i.value;save()});
+ app.querySelectorAll("[data-z]").forEach(c=>c.onclick=()=>{p.z[S.ph]=p.z[S.ph]||[];const a=p.z[S.ph],k=c.dataset.z,i=a.indexOf(k);i<0?a.push(k):a.splice(i,1);save();draw()});
+}
+async function reformulate(p){
+ const msg=document.getElementById("pdfmsg"),it={},dB=p.t.debut||{};
+ Q.forEach((q,i)=>{if(p.q[i]&&(q[2]==="t"||!q[1].includes(p.q[i])))it["a"+i]=p.q[i];if(p.qn[i])it["n"+i]=p.qn[i]});
+ T.forEach((t,i)=>{if((dB[i]||{}).n)it["t"+i]=dB[i].n});
+ if(!Object.keys(it).length){msg.textContent="Aucun texte écrit à reformuler.";return}
+ msg.textContent="Reformulation en cours…";
+ try{
+  const sm=await claude.use("sample");
+  if(!sm){msg.textContent="La reformulation n’est pas disponible ici.";return}
+  const r=await sm.json("Tu aides une étudiante en activité physique adaptée à rédiger un bilan professionnel. Reformule chaque texte ci-dessous en français clair et professionnel, en gardant exactement le même sens, sans rien ajouter ni inventer. Garde chaque texte court. Réponds uniquement avec un objet JSON ayant les mêmes clés.\n\n"+JSON.stringify(it));
+  p.rf={};Object.keys(it).forEach(k=>{if(typeof r[k]==="string"&&r[k].trim())p.rf[k]=r[k].trim()});
+  save();draw();document.getElementById("pdfmsg").textContent="Textes reformulés. Ils seront utilisés dans le PDF.";
+ }catch(e){msg.textContent=e&&e.code=="not_granted"?"Autorisation refusée.":"Reformulation impossible pour l’instant."}
+}
+async function pdf(p){
+ const msg=document.getElementById("pdfmsg");
+ try{
+  const dl={save:async({filename,data})=>{const f=new File([data],filename,{type:"application/pdf"});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e&&e.name==="AbortError")return}}const u=URL.createObjectURL(data),a=document.createElement("a");a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}};
+  if(!dl||!window.jspdf){msg.textContent="Le téléchargement n’est pas disponible ici.";return}
+  const d=new window.jspdf.jsPDF({unit:"mm",format:"a4"});
+  const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),fill=h=>d.setFillColor(...rgb(h)),ink=()=>d.setTextColor(74,59,54);
+  const dB=p.t.debut||{},fB=p.t.fin||{};let y=22;
+  const need=h=>{if(y+h>278){d.addPage();y=20}};
+  d.setFont("times","normal");ink();d.setFontSize(24);d.text("Fiche bilan",105,y,{align:"center"});
+  y+=8;d.setFontSize(13);d.setTextColor(138,122,114);d.text(p.name,105,y,{align:"center"});
+  const title=t=>{need(20);y+=10;fill("#F6E3E1");d.rect(15,y-5.5,180,8,"F");fill("#E9C9C6");d.rect(15,y+2.5,180,.7,"F");d.setFontSize(13);d.setFont("times","bold");ink();d.text(t,18,y);y+=8};
+  const tr=(c,w,hd)=>{d.setFontSize(11);const L=c.map((s,i)=>d.splitTextToSize(String(s),w[i]-4)),h=Math.max(...L.map(l=>l.length))*5+3;need(h);let x=15;c.forEach((s,i)=>{fill(hd?"#EFE4D2":i==0?"#FBF6EC":"#FFFFFF");d.setDrawColor(224,208,186);d.rect(x,y,w[i],h,"FD");d.setFont("times",hd?"bold":"normal");ink();d.text(L[i],x+2,y+5);x+=w[i]});y+=h};
+  title("1. Entretien");Q.forEach((q,i)=>tr([q[0],(RF(p,"a"+i,p.q[i]||"—"))+(p.qn[i]?" ("+RF(p,"n"+i,p.qn[i])+")":"")],[60,120]));
+  title("2. Tests");tr(["Test","Début","Fin","Évolution"],[60,40,40,40],1);
+  T.forEach((t,i)=>{const a=(dB[i]||{}).l,b=(fB[i]||{}).l;tr([t[0],a?a+"/5":"—",b?b+"/5":"—",a&&b?(b-a>0?"+"+(b-a):String(b-a)):"—"],[60,40,40,40])});
+  title("3. Toile d’araignée");need(85);
+  const cx=105,cy=y+38,R=30,n=T.length,pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+R*v/5*Math.cos(a),cy+R*v/5*Math.sin(a)]};
+  d.setDrawColor(224,208,186);d.setLineWidth(.2);
+  for(let l=1;l<=5;l++){const q=T.map((_,i)=>pt(i,l));q.forEach((a,i)=>{const b=q[(i+1)%n];d.line(a[0],a[1],b[0],b[1])})}
+  T.forEach((t,i)=>{const e=pt(i,5),lb=pt(i,6.6);d.line(cx,cy,e[0],e[1]);d.setFontSize(10);ink();d.text(t[0],lb[0],lb[1]+1.5,{align:"center"})});
+  const poly=(src,f,s)=>{const q=T.map((_,i)=>pt(i,(src[i]||{}).l||0));d.setFillColor(...rgb(f));d.setDrawColor(...rgb(s));d.setLineWidth(.6);d.lines(q.slice(1).map((a,k)=>[a[0]-q[k][0],a[1]-q[k][1]]),q[0][0],q[0][1],[1,1],"FD",true)};
+  try{d.setGState(new d.GState({opacity:.55}))}catch(e){}
+  poly(dB,"#E9C9C6","#D9A29D");poly(fB,"#B9A58A","#7A6650");
+  try{d.setGState(new d.GState({opacity:1}))}catch(e){}
+  y=cy+R+14;d.setFontSize(10);ink();d.text("Rose : début de cycle   |   Beige foncé : fin de cycle",105,y,{align:"center"});y+=4;
+  title("4. Zones à surveiller");d.setFont("times","normal");d.setFontSize(11);
+  ["Début : "+((p.z.debut||[]).join(", ")||"aucune"),"Fin : "+((p.z.fin||[]).join(", ")||"aucune")].forEach(s=>{need(6);d.text(s,18,y);y+=6});
+  const nt=T.map((t,i)=>(dB[i]||{}).n?t[0]+" : "+RF(p,"t"+i,dB[i].n):"").filter(Boolean);
+  if(nt.length){title("5. Notes");d.setFont("times","normal");d.setFontSize(11);nt.forEach(s=>{d.splitTextToSize(s,174).forEach(l=>{need(6);d.text(l,18,y);y+=5.5})})}
+  const np=d.getNumberOfPages();for(let i=1;i<=np;i++){d.setPage(i);d.setFontSize(9);d.setTextColor(138,122,114);d.text(i+" / "+np,105,290,{align:"center"})}
+  await dl.save({filename:"bilan-"+p.name.trim().replace(/\s+/g,"-").toLowerCase()+".pdf",data:d.output("blob")});
+  msg.textContent="PDF enregistré.";
+ }catch(e){msg.textContent=e&&e.code=="declined"?"Téléchargement annulé.":"Impossible de créer le PDF ici."}
+}
+function settings(){
+ S.cur=null;const m=M(S.sm);S.sm=m.id;
+ const bt=(k,i)=>`<div class="row" style="margin-top:8px"><button class="ghost" data-mv="${k},${i},-1">↑ Monter</button><button class="ghost" data-mv="${k},${i},1">↓ Descendre</button><span style="flex:1"></span><button class="ghost" data-rm="${k},${i}">Supprimer</button></div>`;
+ const f="margin-top:8px";
+ app.innerHTML=`<button class="ghost" id="bk">‹ Retour aux dossiers</button><h1>Réglages</h1><p class="sub">Modèles de bilan</p>
+ <select id="ms" style="width:100%;font:inherit;color:inherit;background:var(--card);border:1px solid var(--beige);border-radius:8px;padding:10px">${S.models.map(x=>`<option value="${x.id}" ${x.id==m.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>
+ <div class="row" style="margin-top:8px"><button class="btn" id="dup">Dupliquer ce modèle</button>${S.models.length>1?`<button class="ghost" id="del">Supprimer ce modèle</button>`:""}</div>
+ <h2>Nom du modèle</h2><input id="mn" value="${esc(m.name)}">
+ <h2>Questions de l’entretien</h2><p class="hint">Réponses séparées par des virgules.</p>
+ ${m.Q.map((q,i)=>`<div class="q"><input data-ql="${i}" value="${esc(q[0])}"><input data-qo="${i}" style="${f}" value="${esc(q[1].join(", "))}"><button class="ghost" data-ty="${i}">${q[2]==="t"?"Réponse écrite uniquement : oui":"Réponse écrite uniquement : non"}</button>${bt("Q",i)}</div>`).join("")}
+ <button class="btn" id="aq">+ Ajouter une question</button>
+ <h2>Tests</h2><p class="hint">Nom, protocole, puis 5 niveaux du plus faible au meilleur, séparés par des virgules.</p>
+ ${m.T.map((t,i)=>`<div class="q"><input data-t1="${i}" value="${esc(t[0])}"><input data-t2="${i}" style="${f}" value="${esc(t[1])}" placeholder="Protocole"><input data-t3="${i}" style="${f}" value="${esc(t[2].join(", "))}">${bt("T",i)}</div>`).join("")}
+ <button class="btn" id="at">+ Ajouter un test</button>`;
+ const q=s=>app.querySelectorAll(s),sv=()=>{save()};
+ document.getElementById("bk").onclick=home;
+ document.getElementById("ms").onchange=e=>{S.sm=+e.target.value;settings()};
+ document.getElementById("mn").oninput=e=>{m.name=e.target.value;sv()};
+ document.getElementById("dup").onclick=()=>{const id=Date.now();S.models.push({id,name:m.name+" (copie)",Q:JSON.parse(JSON.stringify(m.Q)),T:JSON.parse(JSON.stringify(m.T))});S.sm=id;sv();settings()};
+ const dl=document.getElementById("del");if(dl)dl.onclick=()=>{S.models=S.models.filter(x=>x.id!=m.id);S.sm=S.models[0].id;sv();settings()};
+ document.getElementById("aq").onclick=()=>{m.Q.push(["Nouvelle question",["Oui","Non"]]);sv();settings()};
+ document.getElementById("at").onclick=()=>{m.T.push(["Nouveau test","",["1","2","3","4","5"]]);sv();settings()};
+ const ls=v=>v.split(",").map(s=>s.trim()).filter(Boolean);
+ q("[data-ql]").forEach(i=>i.oninput=()=>{m.Q[i.dataset.ql][0]=i.value;sv()});
+ q("[data-ty]").forEach(b=>b.onclick=()=>{const a=m.Q[+b.dataset.ty];a[2]=a[2]==="t"?"":"t";sv();settings()});
+ q("[data-qo]").forEach(i=>i.oninput=()=>{m.Q[i.dataset.qo][1]=ls(i.value);sv()});
+ q("[data-t1]").forEach(i=>i.oninput=()=>{m.T[i.dataset.t1][0]=i.value;sv()});
+ q("[data-t2]").forEach(i=>i.oninput=()=>{m.T[i.dataset.t2][1]=i.value;sv()});
+ q("[data-t3]").forEach(i=>i.oninput=()=>{m.T[i.dataset.t3][2]=ls(i.value);sv()});
+ q("[data-mv]").forEach(b=>b.onclick=()=>{const[k,i,d]=b.dataset.mv.split(","),a=m[k],j=+i+ +d;if(j<0||j>=a.length)return;[a[+i],a[j]]=[a[j],a[+i]];sv();settings()});
+ q("[data-rm]").forEach(b=>b.onclick=()=>{const[k,i]=b.dataset.rm.split(",");if(m[k].length<=1)return;m[k].splice(+i,1);sv();settings()});
+}
+S.cur?draw():home();
+</script>
+</body>
+</html>
